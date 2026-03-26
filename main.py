@@ -1,6 +1,6 @@
 from fastapi import APIRouter, FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
-from routes import items
+from routes import items, auth, protected
 
 app = FastAPI(title="Learning Backend", version="1.0.0")
 
@@ -14,6 +14,9 @@ app.add_middleware(
 
 
 app.include_router(items.router, prefix="/v1")
+app.include_router(auth.router)
+app.include_router(protected.router)
+
 
 # v1 = APIRouter(prefix="/v1")
 
