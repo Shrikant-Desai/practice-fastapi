@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Query, HTTPException, Path
+from fastapi import APIRouter, Query, HTTPException, Path, Depends
 from pydantic import BaseModel, Field
 from typing import List, Optional
 from enum import Enum
+from auth.dependencies import get_current_user, require_admin
 
 
 router = APIRouter(prefix="/items", tags=["Items"])
@@ -60,9 +61,7 @@ async def get_item(item_id: int = Path(ge=0)):
 
 
 @router.post("/", response_model=ItemResponse, status_code=201)
-async def create_item(
-    data: ItemCreate,
-):
+async def create_item(data: ItemCreate, current_user: dict = Depends(get_current_user)):
     global current_id
     item = {"id": current_id, **data.model_dump()}
     items_db[current_id] = item
@@ -71,15 +70,20 @@ async def create_item(
 
 
 @router.patch("/{item_id}", response_model=ItemResponse)
-async def update_item(item_id: int, data: ItemCreate):
+async def update_item(
+    item_id: int, data: ItemCreate, current_user: dict = Depends(get_current_user)
+):
     if item_id not in items_db:
         raise HTTPException(status_code=404, detail="Item not found")
     items_db[item_id].update(data.model_dump())
     return items_db[item_id]
 
 
-@router.delete("/{item_id}", status_code=204)
-async def delete_item(item_id: int):
+@router.delete(
+    "/{item_id}",
+    status_code=204,
+)
+async def delete_item(item_id: int, current_user: dict = Depends(require_admin)):
     if item_id not in items_db:
         raise HTTPException(status_code=404, detail="Item not found")
     del items_db[item_id]
