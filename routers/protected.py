@@ -1,6 +1,5 @@
-# routers/protected.py
 from fastapi import APIRouter, Depends
-from auth.dependencies import get_current_user, require_admin, require_roles
+from core.dependencies import get_current_user, require_admin, require_roles
 
 router = APIRouter(tags=["protected"])
 
@@ -26,4 +25,4 @@ async def delete_user(
 
 @router.get("/reports")
 async def get_reports(current_user: dict = Depends(require_roles("admin", "analyst"))):
-    return {"data": [...]}
+    return {"data": []}

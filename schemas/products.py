@@ -1,17 +1,12 @@
-from fastapi import APIRouter, status
 from pydantic import BaseModel, Field, field_validator, model_validator
-from enum import Enum
 from typing import Optional
+from enum import Enum
 import bleach
-
-router = APIRouter(prefix="/products", tags=["Products"])
-
 
 class ProductCategory(str, Enum):
     electronics = "electronics"
     clothing = "clothing"
     food = "food"
-
 
 class ProductCreate(BaseModel):
     name: str = Field(..., min_length=2, max_length=100)
@@ -43,20 +38,5 @@ class ProductCreate(BaseModel):
             raise ValueError("Discounted price must be less than price")
         return self
 
-
 class ProductResponse(ProductCreate):
     id: int
-
-
-fake_db = []
-
-
-@router.post("/", response_model=ProductResponse, status_code=status.HTTP_201_CREATED)
-def create_product(product: ProductCreate):
-
-    new_product = product.model_dump()
-    new_product["id"] = len(fake_db) + 1
-
-    fake_db.append(new_product)
-
-    return new_product

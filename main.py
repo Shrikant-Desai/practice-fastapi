@@ -1,10 +1,16 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from routes import items, auth, protected, products
+from routers import items, auth, protected, products
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from middleware.timing import RequestTimingMiddleware
+
+
 
 app = FastAPI(title="Learning Backend", version="1.0.0")
+
+
+app.add_middleware(RequestTimingMiddleware)
 
 
 app.add_middleware(
