@@ -20,6 +20,13 @@ class Settings(BaseSettings):
     # Redis
     # redis_url: str = "redis://localhost:6379"
 
+    # SMTP Settings for Email
+    smtp_server: str = "smtp.gmail.com"
+    smtp_port: int = 587
+    smtp_username: Optional[str] = None
+    smtp_password: Optional[str] = None
+    smtp_from_email: str = "noreply@learningbackend.com"
+
     model_config = {"env_file": ".env"}  # reads from .env automatically
 
 

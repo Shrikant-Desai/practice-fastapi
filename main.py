@@ -4,11 +4,12 @@ from routers import items, auth, protected, products
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from middleware.timing import RequestTimingMiddleware
+from middleware.rate_limit import RateLimitMiddleware
 
 
 app = FastAPI(title="Learning Backend", version="1.0.0")
 
-
+app.add_middleware(RateLimitMiddleware, requests_per_minute=60)
 app.add_middleware(RequestTimingMiddleware)
 
 
