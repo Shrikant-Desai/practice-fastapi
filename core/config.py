@@ -15,6 +15,7 @@ class Settings(BaseSettings):
 
     # Database
     database_url: Optional[str] = None  # required — no default
+    sync_database_url: Optional[str] = None  # for Alembic — auto-generated if not set
 
     # Redis
     # redis_url: str = "redis://localhost:6379"

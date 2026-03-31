@@ -1,10 +1,24 @@
 # auth/dependencies.py
+from typing import AsyncGenerator
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import JWTError
 from .security import decode_token
+from sqlalchemy.ext.asyncio import AsyncSession
+from models.base import AsyncSessionLocal
+
 
 bearer_scheme = HTTPBearer()
+
+
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    async with AsyncSessionLocal() as session:
+        try:
+            yield session
+            await session.commit()  # commit if handler succeeded
+        except Exception:
+            await session.rollback()  # rollback on any exception
+            raise
 
 
 async def get_current_user(

@@ -6,7 +6,6 @@ from fastapi.responses import JSONResponse
 from middleware.timing import RequestTimingMiddleware
 
 
-
 app = FastAPI(title="Learning Backend", version="1.0.0")
 
 
