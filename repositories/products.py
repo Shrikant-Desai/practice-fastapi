@@ -1,9 +1,13 @@
-from schemas.products import ProductCreate
+from sqlalchemy.ext.asyncio import AsyncSession
+from models.product import Product
 
-fake_db = []
+class ProductRepository:
+    def __init__(self, db: AsyncSession):
+        self.db = db
 
-def create(product: ProductCreate) -> dict:
-    new_product = product.model_dump()
-    new_product["id"] = len(fake_db) + 1
-    fake_db.append(new_product)
-    return new_product
+    async def create(self, data: dict) -> Product:
+        product = Product(**data)
+        self.db.add(product)
+        await self.db.flush()
+        await self.db.refresh(product)
+        return product

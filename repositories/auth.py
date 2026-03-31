@@ -1,15 +1,43 @@
-from schemas.auth import RegisterRequest
+# repositories/user_repository.py
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from models.user import User
 
-fake_users_db: dict[str, dict] = {}
 
-def get_user_by_email(email: str) -> dict | None:
-    return fake_users_db.get(email)
+class AuthRepository:
+    def __init__(self, db: AsyncSession):
+        self.db = db
 
-def create_user(data: RegisterRequest, hashed_password: str) -> dict:
-    user = {
-        "email": data.email,
-        "hashed_password": hashed_password,
-        "role": data.role,
-    }
-    fake_users_db[data.email] = user
-    return user
+    async def find_by_id(self, user_id: int) -> User | None:
+        result = await self.db.execute(select(User).where(User.id == user_id))
+        return result.scalar_one_or_none()
+
+    async def find_by_username(self, username: str) -> User | None:
+        result = await self.db.execute(select(User).where(User.username == username))
+        return result.scalar_one_or_none()
+
+    async def find_by_email(self, email: str) -> User | None:
+        result = await self.db.execute(select(User).where(User.email == email))
+        return result.scalar_one_or_none()
+
+    async def find_all(self, skip: int = 0, limit: int = 10) -> list[User]:
+        result = await self.db.execute(select(User).offset(skip).limit(limit))
+        return list(result.scalars().all())
+
+    async def create(self, data: dict) -> User:
+        user = User(**data)
+        self.db.add(user)
+        await self.db.flush()  # sends INSERT, gets the id back, but doesn't commit yet
+        await self.db.refresh(user)  # reload from DB to get server defaults
+        return user
+
+    async def update(self, user: User, data: dict) -> User:
+        for key, value in data.items():
+            setattr(user, key, value)
+        await self.db.flush()
+        await self.db.refresh(user)
+        return user
+
+    async def delete(self, user: User) -> None:
+        await self.db.delete(user)
+        await self.db.flush()

@@ -19,3 +19,5 @@ class ItemResponse(BaseModel):
     price: float
     category: Category
     in_stock: bool
+
+    model_config = {"from_attributes": True}

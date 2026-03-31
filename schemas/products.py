@@ -15,6 +15,7 @@ class ProductCreate(BaseModel):
     sku: str = Field(..., pattern=r"^[A-Z]{2}-\d{4}$")
     description: Optional[str] = Field(default=None, max_length=1000)
     discount_price: Optional[float] = None
+    stock: int = Field(default=0, ge=0)
 
     @field_validator("name", mode="before")
     @classmethod
@@ -40,3 +41,5 @@ class ProductCreate(BaseModel):
 
 class ProductResponse(ProductCreate):
     id: int
+
+    model_config = {"from_attributes": True}

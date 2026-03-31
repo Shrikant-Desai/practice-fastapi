@@ -14,6 +14,7 @@ class Product(Base):
     category: Mapped[str] = mapped_column(String(50), index=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     stock: Mapped[int] = mapped_column(Integer, default=0)
+    discount_price: Mapped[float | None] = mapped_column(Float, nullable=True)
     owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
 
     owner: Mapped["User"] = relationship("User", back_populates="products")
