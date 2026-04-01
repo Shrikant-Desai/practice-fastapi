@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from routers import items, auth, protected, products
+from routers import items, auth, protected, products, tasks
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from middleware.timing import RequestTimingMiddleware
@@ -25,6 +25,7 @@ app.include_router(items.router, prefix="/v1")
 app.include_router(auth.router, prefix="/v1")
 app.include_router(protected.router, prefix="/v1")
 app.include_router(products.router, prefix="/v1")
+app.include_router(tasks.router, prefix="/v1")
 
 
 @app.exception_handler(RequestValidationError)

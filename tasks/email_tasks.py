@@ -5,6 +5,7 @@ from tasks.celery_app import celery_app
 
 settings = get_settings()
 
+
 @celery_app.task(
     bind=True,
     max_retries=3,  # retry up to 3 times on failure
@@ -16,7 +17,7 @@ def send_welcome_email(self, user_email: str, username: str) -> dict:
         msg["Subject"] = "Welcome to Learning Backend! 🎉"
         msg["From"] = settings.smtp_from_email
         msg["To"] = user_email
-        
+
         # Simple, modern responsive HTML template
         html_content = f"""
         <!DOCTYPE html>
@@ -99,7 +100,7 @@ def send_welcome_email(self, user_email: str, username: str) -> dict:
                     <p>We're absolutely thrilled to have you join <strong>Learning Backend</strong>! Your account has been successfully created and you're all set to go.</p>
                     <p>Dive right in to explore all the amazing features, databases, and microservices we're building together.</p>
                     <div class="btn-container">
-                        <a href="https://yourwebsite.com/login" class="btn">Login to Your Account</a>
+                        <a href="http://localhost:8000/docs" class="btn">Login to Your Account</a>
                     </div>
                 </div>
                 <div class="footer">
@@ -110,18 +111,18 @@ def send_welcome_email(self, user_email: str, username: str) -> dict:
         </body>
         </html>
         """
-        
+
         # Plain text fallback
         plain_text = (
             f"Hi {username},\n\n"
             f"Welcome to Learning Backend! We're thrilled to have you here.\n\n"
-            f"Login to your account: https://yourwebsite.com/login\n\n"
+            f"Login to your account: http://localhost:8000/docs\n\n"
             f"If you didn't create this account, you can safely ignore this email."
         )
         msg.set_content(plain_text)
-        
+
         # Attach the HTML version
-        msg.add_alternative(html_content, subtype='html')
+        msg.add_alternative(html_content, subtype="html")
 
         # Logic: If SMTP credentials are set, actually send it. Otherwise, print for debugging.
         if settings.smtp_username and settings.smtp_password:
@@ -131,14 +132,18 @@ def send_welcome_email(self, user_email: str, username: str) -> dict:
                 server.send_message(msg)
             print(f"[Celery] Welcome email successfully sent via SMTP to {user_email}")
         else:
-            print(f"[Celery] MOCK EMAIL: Pretending to send welcome email to {user_email}")
+            print(
+                f"[Celery] MOCK EMAIL: Pretending to send welcome email to {user_email}"
+            )
             print(f"Content length: {len(html_content)} bytes")
             # You can uncomment this line for full output debugging in terminal:
             # print(html_content)
-            
+
         return {"status": "sent", "to": user_email}
-        
+
     except Exception as exc:
-        print(f"[Celery] Failed to send email to {user_email}. Retrying... Error: {str(exc)}")
+        print(
+            f"[Celery] Failed to send email to {user_email}. Retrying... Error: {str(exc)}"
+        )
         # Raise retry passing the exception to exponentially backoff according to Celery settings
         raise self.retry(exc=exc)

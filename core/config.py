@@ -25,7 +25,10 @@ class Settings(BaseSettings):
     smtp_port: int = 587
     smtp_username: Optional[str] = None
     smtp_password: Optional[str] = None
-    smtp_from_email: str = "noreply@learningbackend.com"
+    smtp_from_email: str = None
+
+    # redis URL for Celery
+    redis_url: str = "redis://localhost:6379/0"
 
     model_config = {"env_file": ".env"}  # reads from .env automatically
 

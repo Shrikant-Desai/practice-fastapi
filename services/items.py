@@ -1,6 +1,7 @@
 import json
 
 from fastapi import HTTPException
+from fastapi.encoders import jsonable_encoder
 from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from schemas.items import ItemCreate
@@ -15,13 +16,16 @@ async def get_all_items(
     repo = ItemRepository(db)
 
     # Cache list results too — but with a shorter TTL since they change more
-    cache_key = f"products:list:{page}:{page_size}"
+    cache_key = f"items:list:{page}:{page_size}"
     cached = await get_cache(cache_key)
     if cached:
         return json.loads(cached)
 
     items = await repo.get_all(page=page, page_size=page_size, in_stock=in_stock)
-    await set_cache(cache_key, json.dumps(items), ttl=300)  # 5 minutes
+    print("DB query executed for items list", items)
+    await set_cache(
+        cache_key, json.dumps(jsonable_encoder(items)), ttl=300
+    )  # 5 minutes
     return items
 
 
@@ -40,7 +44,7 @@ async def get_item(item_id: int, db: AsyncSession) -> Item:
         raise HTTPException(status_code=404, detail="Item not found")
 
     # 3. Store in cache for next time (TTL = 1 hour)
-    await set_cache(cache_key, json.dumps(item), ttl=3600)
+    await set_cache(cache_key, json.dumps(jsonable_encoder(item)), ttl=3600)
     return item
 
 
@@ -48,7 +52,7 @@ async def create_item(data: ItemCreate, db: AsyncSession) -> Item:
     repo = ItemRepository(db)
     item = await repo.create(data.model_dump())
     # Invalidate all list caches — new product affects every list
-    await delete_pattern("products:list:*")
+    await delete_pattern("items:list:*")
     return item
 
 
@@ -71,3 +75,4 @@ async def delete_item(item_id: int, db: AsyncSession) -> None:
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
     await repo.delete(item)
+    await delete_cache(f"item:{item_id}")

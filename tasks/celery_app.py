@@ -14,3 +14,5 @@ celery_app.conf.update(
     result_expires=3600,
     timezone="UTC",
 )
+
+celery_app.autodiscover_tasks(["tasks"])
