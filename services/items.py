@@ -8,12 +8,16 @@ from schemas.items import ItemCreate
 from repositories.items import ItemRepository
 from models.item import Item
 from cache.redis_client import get_cache, set_cache, delete_cache, delete_pattern
+from core.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 async def get_all_items(
     page: int, page_size: int, db: AsyncSession, in_stock: Optional[bool] = None
 ) -> List[Item]:
     repo = ItemRepository(db)
+    logger.info("get_all_items", page=page, page_size=page_size, in_stock=in_stock)
 
     # Cache list results too — but with a shorter TTL since they change more
     cache_key = f"items:list:{page}:{page_size}"
@@ -22,7 +26,7 @@ async def get_all_items(
         return json.loads(cached)
 
     items = await repo.get_all(page=page, page_size=page_size, in_stock=in_stock)
-    print("DB query executed for items list", items)
+    logger.info("db_query_executed", query="get_all_items", items=items)
     await set_cache(
         cache_key, json.dumps(jsonable_encoder(items)), ttl=300
     )  # 5 minutes
@@ -31,6 +35,7 @@ async def get_all_items(
 
 async def get_item(item_id: int, db: AsyncSession) -> Item:
     repo = ItemRepository(db)
+    logger.info("get_item", item_id=item_id)
 
     cache_key = f"item:{item_id}"
 
@@ -41,10 +46,12 @@ async def get_item(item_id: int, db: AsyncSession) -> Item:
     # 2. Cache miss — fetch from DB
     item = await repo.get_by_id(item_id)
     if not item:
+        logger.warning("item_not_found", item_id=item_id)
         raise HTTPException(status_code=404, detail="Item not found")
 
     # 3. Store in cache for next time (TTL = 1 hour)
     await set_cache(cache_key, json.dumps(jsonable_encoder(item)), ttl=3600)
+    logger.info("get_item_completed", query="get_item", item_id=item_id)
     return item
 
 

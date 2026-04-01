@@ -30,6 +30,10 @@ class Settings(BaseSettings):
     # redis URL for Celery
     redis_url: str = "redis://localhost:6379/0"
 
+    # observability
+    enable_tracing: bool = False
+    enable_metrics: bool = True
+
     model_config = {"env_file": ".env"}  # reads from .env automatically
 
 
