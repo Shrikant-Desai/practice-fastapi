@@ -8,6 +8,7 @@ from core.security import (
     create_refresh_token,
 )
 from repositories.auth import AuthRepository
+from tasks.email_tasks import send_welcome_email
 
 
 async def register_user(data: RegisterRequest, db: AsyncSession) -> dict:
@@ -19,8 +20,10 @@ async def register_user(data: RegisterRequest, db: AsyncSession) -> dict:
 
     user_data = data.model_dump()
     user_data["password"] = hash_password(user_data.pop("password"))
-    await repo.create(user_data)
-    return {"msg": "User created"}
+    user = await repo.create(user_data)
+
+    send_welcome_email.delay(user.email, user.username)  # Async email task
+    return {"msg": "user created", "data": user}
 
 
 async def login_user(data: LoginRequest, db: AsyncSession) -> TokenResponse:

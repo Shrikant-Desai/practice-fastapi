@@ -8,6 +8,18 @@ class RegisterRequest(BaseModel):
     role: str = "user"
 
 
+class UserData(BaseModel):
+    id: int
+    username: str
+    email: str
+    role: str
+
+
+class RegisterResponse(BaseModel):
+    msg: str
+    data: UserData
+
+
 class LoginRequest(BaseModel):
     email: str
     password: str
