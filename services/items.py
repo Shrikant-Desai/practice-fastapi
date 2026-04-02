@@ -20,7 +20,7 @@ async def get_all_items(
     logger.info("get_all_items", page=page, page_size=page_size, in_stock=in_stock)
 
     # Cache list results too — but with a shorter TTL since they change more
-    cache_key = f"items:list:{page}:{page_size}"
+    cache_key = f"items:list:{page}:{page_size}:{in_stock}"
     cached = await get_cache(cache_key)
     if cached:
         return json.loads(cached)

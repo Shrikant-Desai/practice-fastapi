@@ -1,0 +1,44 @@
+# Git
+.git
+
+# Python cache and byte-compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual Environment
+.venv/
+venv/
+env/
+ENV/
+
+# Secrets and local configurations
+.env
+.env.local
+.env.*
+
+# Tests and Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# Type Hinting
+.mypy_cache/
+
+# IDE and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Any local data or logs
+*.sqlite3
+*.db
+*.log
+logs/
+
+# Docker overrides
+docker-compose*.yml
+docker-compose*.yaml
